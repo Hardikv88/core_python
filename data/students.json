@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "name": "Hardik",
+    "city": "Ahmedabad"
+  },
+  {
+    "id": 2,
+    "name": "Aisha",
+    "city": "Mumbai"
+  },
+  {
+    "id": 3,
+    "name": "Rohan",
+    "city": "Pune"
+  },
+  {
+    "id": 4,
+    "name": "Meera",
+    "city": "Surat"
+  },
+  {
+    "id": 5,
+    "name": "Neha",
+    "city": "Delhi"
+  },
+  {
+    "id": 6,
+    "name": "Tushar",
+    "city": "Surat"
+  },
+  {
+    "id": 7,
+    "name": "Tushar",
+    "city": "Surat"
+  },
+  {
+    "id": 8,
+    "name": "Tushar",
+    "city": "Surat"
+  },
+  {
+    "id": 9,
+    "name": "Tushar",
+    "city": "Surat"
+  },
+  {
+    "id": 10,
+    "name": "Manoj",
+    "city": "Surat"
+  }
+]
