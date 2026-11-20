@@ -20,4 +20,19 @@ def insert_student(data: dict) -> dict:
     with psycopg.connect(**DATABASE, row_factory=dict_row) as conn:
         with conn.cursor() as cur:
             cur.execute(query, data)
-            return cur.fetchone()
+            row = cur.fetchone()
+        conn.commit()
+        return row
+
+
+def get_all_students() -> list[dict]:
+    query = """
+        SELECT id, first_name, last_name, birth_date AS birthday, phone_number,
+               country, state, city, address
+        FROM student_details
+        ORDER BY id
+    """
+    with psycopg.connect(**DATABASE, row_factory=dict_row) as conn:
+        with conn.cursor() as cur:
+            cur.execute(query)
+            return cur.fetchall()
