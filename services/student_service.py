@@ -25,6 +25,16 @@ def insert_student(data: dict) -> dict:
         return row
 
 
+def delete_student(student_id: int) -> bool:
+    query = "DELETE FROM student_details WHERE id = %(id)s RETURNING id"
+    with psycopg.connect(**DATABASE, row_factory=dict_row) as conn:
+        with conn.cursor() as cur:
+            cur.execute(query, {"id": student_id})
+            deleted = cur.fetchone()
+        conn.commit()
+        return deleted is not None
+
+
 def get_all_students() -> list[dict]:
     query = """
         SELECT id, first_name, last_name, birth_date AS birthday, phone_number,
