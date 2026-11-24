@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Students</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='css/students.css') }}" />
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <div class="title-group">
+        <h1>Student Records</h1>
+        <span class="badge">{{ students|length }} total</span>
+      </div>
+      <button type="button" class="btn btn-primary" id="openAddDialog">+ Add Student</button>
+    </header>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Birthday</th>
+            <th>Phone</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Country</th>
+            <th>Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in students %}
+          <tr>
+            <td>{{ s.id }}</td>
+            <td>{{ s.first_name }} {{ s.last_name }}</td>
+            <td>{{ s.birthday }}</td>
+            <td>{{ s.phone_number }}</td>
+            <td>{{ s.city }}</td>
+            <td>{{ s.state }}</td>
+            <td>{{ s.country }}</td>
+            <td>{{ s.address }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="empty">No students found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <dialog id="addDialog" class="dialog">
+      <form id="addForm" method="dialog" novalidate>
+        <h2>Add Student</h2>
+
+        <div class="form-grid">
+          <label>First Name
+            <input type="text" name="first_name" maxlength="100" required />
+          </label>
+          <label>Last Name
+            <input type="text" name="last_name" maxlength="100" required />
+          </label>
+          <label>Birthday
+            <input type="date" name="birthday" required />
+          </label>
+          <label>Phone Number
+            <input type="tel" name="phone_number" inputmode="numeric"
+                   pattern="[0-9]{10,15}" minlength="10" maxlength="15" required />
+          </label>
+          <label>Country
+            <input type="text" name="country" maxlength="100" required />
+          </label>
+          <label>State
+            <input type="text" name="state" maxlength="100" required />
+          </label>
+          <label>City
+            <input type="text" name="city" maxlength="100" required />
+          </label>
+          <label class="full">Address
+            <input type="text" name="address" maxlength="255" required />
+          </label>
+        </div>
+
+        <p id="formError" class="form-error" hidden></p>
+
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="addBtn">Add</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <script>
+    const dialog   = document.getElementById("addDialog");
+    const form     = document.getElementById("addForm");
+    const errorBox = document.getElementById("formError");
+    const addBtn   = document.getElementById("addBtn");
+
+    // backend rejects future birthdays, so cap the date picker at today
+    form.birthday.max = new Date().toISOString().split("T")[0];
+
+    document.getElementById("openAddDialog").addEventListener("click", () => {
+      form.reset();
+      errorBox.hidden = true;
+      dialog.showModal();
+    });
+
+    document.getElementById("cancelBtn").addEventListener("click", () => dialog.close());
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorBox.hidden = true;
+
+      if (!form.reportValidity()) return;
+
+      const payload = Object.fromEntries(new FormData(form).entries());
+      Object.keys(payload).forEach((k) => (payload[k] = payload[k].trim()));
+
+      addBtn.disabled = true;
+      addBtn.textContent = "Adding...";
+
+      try {
+        const res = await fetch("/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          dialog.close();
+          window.location.reload(); // refresh list to show the new student
+          return;
+        }
+
+        const data = await res.json().catch(() => ({}));
+        let msg = "Failed to add student.";
+        if (Array.isArray(data.detail)) {
+          msg = data.detail
+            .map((d) => `${d.loc.slice(-1)[0]}: ${d.msg}`)
+            .join(" | ");
+        } else if (typeof data.detail === "string") {
+          msg = data.detail;
+        }
+        errorBox.textContent = msg;
+        errorBox.hidden = false;
+      } catch (err) {
+        errorBox.textContent = "Network error. Is the server running?";
+        errorBox.hidden = false;
+      } finally {
+        addBtn.disabled = false;
+        addBtn.textContent = "Add";
+      }
+    });
+
+    // close when clicking the dark backdrop
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+  </script>
+</body>
+</html>
