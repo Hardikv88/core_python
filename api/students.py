@@ -1,7 +1,12 @@
 from fastapi import APIRouter, HTTPException
 
 from api.schemas.student import StudentCreate, StudentResponse
-from services.student_service import delete_student, get_all_students, insert_student
+from services.student_service import (
+    delete_student,
+    get_all_students,
+    insert_student,
+    update_student,
+)
 
 router = APIRouter(tags=["students"])
 
@@ -14,6 +19,14 @@ def create_student(student: StudentCreate):
 @router.get("/students", response_model=list[StudentResponse])
 def list_students():
     return get_all_students()
+
+
+@router.put("/students/{student_id}", response_model=StudentResponse)
+def edit_student(student_id: int, student: StudentCreate):
+    updated = update_student(student_id, student.model_dump())
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return updated
 
 
 @router.delete("/students/{student_id}", status_code=204)
